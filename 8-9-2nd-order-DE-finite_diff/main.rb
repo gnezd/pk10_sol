@@ -75,7 +75,7 @@ big_operator = dd/(dx**2) + a  / (2*dx) * d + b * GSL::Matrix.I(n-1)
 const_arr = (0..n-2).map {c}
 const_arr[0] += (a/(2*dx)-1/(dx**2))*bc[0][1]
 const_arr[-1] += (-1.0)*(a/(2*dx)+1/(dx**2))*bc[1][1]
-const =GSL::Matrix.alloc(const_arr.flatten, 1, n-1)
+const = GSL::Matrix.alloc(const_arr.flatten, 1, n-1)
 #puts const
 
 answer = (const * big_operator.inv).to_a.flatten
