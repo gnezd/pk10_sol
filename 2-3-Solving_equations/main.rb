@@ -56,7 +56,7 @@ end
 # Find f(x)=0 in (a,b)
 def median_search(f, a, b, tolerance, probe_density=10)
   step = (b-a).to_f/probe_density
-  return (a+b).to_f / 2 if step < tolerance
+  return [(a+b).to_f / 2] if step < tolerance
   values = (0..probe_density).map {|i| f.yield(a+i*step)}
   flips = []
   (0..values.size-2).each do |i|
@@ -65,7 +65,7 @@ def median_search(f, a, b, tolerance, probe_density=10)
   #puts "Flips:"
   #puts flips.map{|i| "#{i} #{a+i*step} #{values[i]}"}
   
-  flips.map {|i| median_search(f, a+i*step, a+(i+1)*step, tolerance)}
+  (flips.map {|i| median_search(f, a+i*step, a+(i+1)*step, tolerance)}).reduce :+
   
 end
 
@@ -85,12 +85,25 @@ def weighted_search(f, a, b, tolerance)
     return cut
   end
 end
+
+def max(func, a, b, tolerance, probe_density=100)
+  slice = (b-a).to_f / probe_density
+  sampling = (0..probe_density).map {|i| a + i*slice}
+  values = sampling.map {|x| func.yield(x)}
+  maxes = []
+  (1..probe_density-2).each do |i|
+    maxes.push i if values[i+1] >= values[i] && values[i+1] >= values[i+2]
+  end
+  return maxes.map {|i| sampling[i]} if slice < tolerance
+  (maxes.map{|i| max(func, sampling[i-1], sampling[i+1], tolerance, probe_density)}).reduce :+
+end
 #func = Proc.new {|x| interpol(x, data)}
 #func = Proc.new {|x| Math.sin(x)}
 func = Proc.new {|x| j(x, 1, 50)}
 func = Proc.new {|x| Math.sin(1/x)}
 func = Proc.new {|x| (3/x**3 - 1/x)*Math.sin(x) - Math.cos(x)*3/x**2}
 #puts euler(func, 2.5, 1E-5)
-puts median_search(func, 0.0, 20, 1E-5, 10)
-x = weighted_search(func, 8.5, 9.5, 1E-10)
-puts "#{x} -> #{func.yield(x)}"
+x= median_search(func, 0.0, 20, 1E-5, 10)
+#weighted_search(func, 8.5, 9.5, 1E-10)
+puts "#{x} -> #{x.map {|xv| func.yield(xv)}}"
+puts max(func, 9.5, 12, 1E-4)
