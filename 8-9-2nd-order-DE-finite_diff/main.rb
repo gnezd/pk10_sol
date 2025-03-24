@@ -10,6 +10,9 @@
 
 require 'gsl'
 
+def analytic_sol(x)
+  73.4523 * Math.exp(0.1*x) - 53.4523 * Math.exp(-0.1*x) + 20.0
+end
 puts "How many slices?"
 n = gets.to_i
 
@@ -70,7 +73,7 @@ dd = GSL::Matrix.alloc(dd_arr.flatten, n-1, n-1)
 
 dx = (bc[1][0] - bc[0][0])/n
 big_operator = dd/(dx**2) + a  / (2*dx) * d + b * GSL::Matrix.I(n-1)
-#puts dx
+puts dx
 #puts big_operator
 const_arr = (0..n-2).map {c}
 const_arr[0] += (a/(2*dx)-1/(dx**2))*bc[0][1]
@@ -83,5 +86,5 @@ answer = (const * big_operator.inv).to_a.flatten
 fout = File.open 'answer.txt', 'w'
 
 answer.each_index do |i|
-  fout.puts "#{bc[0][1] + i*dx} #{answer[i]}"
+  fout.puts "#{bc[0][0] + i*dx} #{answer[i]} #{analytic_sol(bc[0][0]+i*dx)}"
 end
